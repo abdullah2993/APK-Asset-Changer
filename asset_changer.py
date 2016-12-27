@@ -24,7 +24,7 @@ if __name__ == '__main__':
     PARSER.parse_args()
 
     AND_BT = os.getenv("ANDROID_HOME_BT")
-    AND_BT = AND_BT[1:len(AND_BT)-1]
+    AND_BT = AND_BT[1:-1]
 
     if AND_BT is None:
         print "set ANDROID_HOME_BT Environment Variable to [SDK PATH]\build-tools\\{ver}"
