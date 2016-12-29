@@ -15,16 +15,16 @@ def unpack_apk(apk_path, unpack_path):
     zipf.close()
 
 if __name__ == '__main__':
-    PARSER = argparse.ArgumentParser()
-    PARSER.add_argument("APK_FILE")
-    PARSER.add_argument("Asset_FILE")
-    PARSER.add_argument("ASSET_NAME")
-    PARSER.add_argument("KEYSTORE")
-    PARSER.add_argument("KEYPASS")
-    PARSER.parse_args()
+    PARSER = argparse.ArgumentParser("Change an existing asset in an APK file and sign it.")
+    PARSER.add_argument("APK_FILE", help="Path to APK file")
+    PARSER.add_argument("ASSET_FILE", help="Path to new Asset file")
+    PARSER.add_argument("ASSET_NAME", help="Name of the Asset to be replaced")
+    PARSER.add_argument("KEYSTORE", help="Path to Keystore")
+    PARSER.add_argument("KEYPASS", help="Password of Keystore")
+    PARSER.add_argument("-q", "--quite", action="store_false")
+    ARGS = PARSER.parse_args()
 
     AND_BT = os.getenv("ANDROID_HOME_BT")
-    AND_BT = AND_BT[1:-1]
 
     if AND_BT is None:
         print "set ANDROID_HOME_BT Environment Variable to [SDK PATH]\build-tools\\{ver}"
@@ -37,17 +37,17 @@ if __name__ == '__main__':
     ALIGN = '"{0}" -v -p 4 {1} AL-{1}'
     SIGN = '"{0}" sign -v --ks "{1}" --ks-pass pass:{2} --out signed-{3} AL-{3}'
 
-    APK_PATH = os.path.abspath(sys.argv[1])
-    ASSET_PATH = os.path.abspath(sys.argv[2])
-    ASSET = sys.argv[3]
-    KEYSTORE = os.path.abspath(sys.argv[4])
-    KEYPASS = sys.argv[5]
+    APK_PATH = os.path.abspath(ARGS.APK_FILE)
+    ASSET_PATH = os.path.abspath(ARGS.ASSET_FILE)
+    ASSET = ARGS.ASSET_NAME
+    KEYSTORE = os.path.abspath(ARGS.KEYSTORE)
+    KEYPASS = ARGS.KEYPASS
 
-    print "APK PATH: %s" % APK_PATH
-    print "NEW ASSET PATH: %s" % ASSET_PATH
-    print "NAME OF ASSET TO BE REPLACED: %s" % ASSET
-    print "KEYSTORE PATH: %s" % KEYSTORE
-    print "KEYSTORE PASSWORD: %s" % KEYPASS
+    print "APK PATH: ", APK_PATH
+    print "NEW ASSET PATH: ", ASSET_PATH
+    print "NAME OF ASSET TO BE REPLACED: ", ASSET
+    print "KEYSTORE PATH: ", KEYSTORE
+    print "KEYSTORE PASSWORD: ", KEYPASS
 
     APK_NAME = os.path.basename(APK_PATH)
     ASSET_NAME = os.path.basename(ASSET_PATH)
@@ -113,9 +113,10 @@ if __name__ == '__main__':
         shutil.rmtree(TEMP_PATH)
 
         print "ALIGNING APK..."
-        #os.system('"' + T_ALIGN + '"'+ " 4 " + APK_NAME + " AL-" + APK_NAME)
         subprocess.Popen(shlex.split(str.format(ALIGN, T_ALIGN, APK_NAME))).wait()
         print "REMOVING UNALIGNED APK..."
         os.remove(APK_NAME)
         print "SIGNING APK..."
         subprocess.Popen(shlex.split(str.format(SIGN, T_SIGN, KEYSTORE, KEYPASS, APK_NAME))).wait()
+        print "REMOVING ALIGNED APK..."
+        os.remove("AL-{0}".format(APK_NAME))
